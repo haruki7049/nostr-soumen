@@ -37,14 +37,13 @@
             pkgs.ruff # Python (Scons)
           ];
           nativeBuildInputs.build = [
-            pkgs.scons
+            pkgs.zig_0_15
             pkgs.pkg-config
           ];
 
           nostr-soumen = pkgs.stdenv.mkDerivation {
             name = "nostr-soumen";
             src = lib.cleanSource ./.;
-            doCheck = true;
 
             nativeBuildInputs = nativeBuildInputs.build;
             buildInputs = buildInputs.dependencies;
@@ -59,6 +58,9 @@
 
             # C / C++
             programs.clang-format.enable = true;
+
+            # Zig
+            programs.zig.enable = true;
 
             # Python
             programs.ruff-check.enable = true;
