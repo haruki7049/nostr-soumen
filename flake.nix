@@ -30,8 +30,7 @@
             pkgs.cli11
             pkgs.ftxui
           ];
-          buildInputs.dev-dependencies = [
-          ];
+          buildInputs.dev-dependencies = [ ];
           nativeBuildInputs.lsp = [
             pkgs.nil # Nix
             pkgs.clang-tools # C / C++
