@@ -24,7 +24,7 @@
       imports = [ inputs.treefmt-nix.flakeModule ];
 
       perSystem =
-        { pkgs, ... }:
+        { pkgs, lib, ... }:
         let
           tools.lsp = [
             pkgs.nil # Nix
@@ -39,6 +39,15 @@
             pkgs.cli11
             pkgs.ftxui
           ];
+
+          nostr-soumen = pkgs.stdenv.mkDerivation {
+            name = "nostr-soumen";
+            src = lib.cleanSource ./.;
+            doCheck = true;
+
+            nativeBuildInputs = tools.build;
+            inherit buildInputs;
+          };
         in
         {
           treefmt = {
@@ -63,6 +72,15 @@
             # ShellScript
             programs.shellcheck.enable = true;
             programs.shfmt.enable = true;
+          };
+
+          packages = {
+            inherit nostr-soumen;
+            default = nostr-soumen;
+          };
+
+          checks = {
+            inherit nostr-soumen;
           };
 
           devShells.default = pkgs.mkShell {
