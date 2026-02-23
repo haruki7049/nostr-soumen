@@ -36,6 +36,7 @@
             pkgs.pkg-config
           ];
           buildInputs = [
+            pkgs.cli11
             pkgs.ftxui
           ];
         in
