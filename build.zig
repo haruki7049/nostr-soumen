@@ -11,6 +11,8 @@ pub fn build(b: *std.Build) void {
     });
     mod.addCSourceFiles(.{ .root = b.path("src"), .files = &.{"main.cpp"} });
     mod.linkSystemLibrary("CLI11", .{});
+    mod.linkSystemLibrary("ftxui", .{});
+    mod.linkSystemLibrary("boost", .{});
 
     // Executable
     const exe = b.addExecutable(.{

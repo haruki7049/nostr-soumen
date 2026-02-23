@@ -1,14 +1,42 @@
-#include <CLI/CLI.hpp>
-#include <iostream>
+// #include <CLI/CLI.hpp>
+// #include <iostream>
 
-int main(int argc, char **argv) {
-  CLI::App app{"Watch Nostr posts by a TUI screen...", "nostr-soumen"};
+#include <ftxui/dom/elements.hpp>
+#include <ftxui/dom/node.hpp>
+#include <ftxui/screen/color.hpp>
+#include <ftxui/screen/screen.hpp>
 
-  int p = 0;
-  app.add_option("-p", p, "An example CLI parameter");
+int main(int argc, char** argv) {
+  auto cell = [](const char* t) { return ftxui::text(t) | ftxui::border; };
+  auto document = ftxui::gridbox({
+      {
+          cell("north-west"),
+          cell("north"),
+          cell("north-east"),
+      },
+      {
+          cell("center-west"),
+          ftxui::gridbox({{
+                              cell("center-north-west"),
+                              cell("center-north-east"),
+                          },
+                          {
+                              cell("center-south-west"),
+                              cell("center-south-east"),
+                          }}),
+          cell("center-east"),
+      },
+      {
+          cell("south-west"),
+          cell("south"),
+          cell("south-east"),
+      },
+  });
 
-  CLI11_PARSE(app, argc, argv);
+  auto screen = ftxui::Screen::Create(ftxui::Dimension::Fit(document));
+  ftxui::Render(screen, document);
+  screen.Print();
+  getchar();
 
-  std::cout << "Parameter value: " << p << std::endl;
   return 0;
 }
