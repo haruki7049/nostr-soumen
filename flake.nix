@@ -29,6 +29,7 @@
           buildInputs.dependencies = [
             pkgs.cli11
             pkgs.ftxui
+            pkgs.boost190
           ];
           buildInputs.dev-dependencies = [ ];
           nativeBuildInputs.lsp = [
