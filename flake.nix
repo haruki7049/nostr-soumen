@@ -26,18 +26,20 @@
       perSystem =
         { pkgs, lib, ... }:
         let
-          tools.lsp = [
+          buildInputs.dependencies = [
+            pkgs.cli11
+            pkgs.ftxui
+          ];
+          buildInputs.dev-dependencies = [
+          ];
+          nativeBuildInputs.lsp = [
             pkgs.nil # Nix
             pkgs.clang-tools # C / C++
             pkgs.ruff # Python (Scons)
           ];
-          tools.build = [
+          nativeBuildInputs.build = [
             pkgs.scons
             pkgs.pkg-config
-          ];
-          buildInputs = [
-            pkgs.cli11
-            pkgs.ftxui
           ];
 
           nostr-soumen = pkgs.stdenv.mkDerivation {
@@ -45,8 +47,8 @@
             src = lib.cleanSource ./.;
             doCheck = true;
 
-            nativeBuildInputs = tools.build;
-            inherit buildInputs;
+            nativeBuildInputs = nativeBuildInputs.build;
+            buildInputs = buildInputs.dependencies;
           };
         in
         {
@@ -84,8 +86,8 @@
           };
 
           devShells.default = pkgs.mkShell {
-            nativeBuildInputs = tools.lsp ++ tools.build;
-            inherit buildInputs;
+            nativeBuildInputs = nativeBuildInputs.lsp ++ nativeBuildInputs.build;
+            buildInputs = buildInputs.dependencies;
           };
         };
     };

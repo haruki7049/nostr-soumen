@@ -20,4 +20,4 @@ else:
 
 
 # Compile the cpp files in src dir
-env.SConscript("./src/SConscript", variant_dir="build")
+env.SConscript("./src/SConscript", variant_dir="build", exports="env")

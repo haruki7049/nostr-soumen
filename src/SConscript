@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
-from SCons.Script import Program, Glob
+from SCons.Script import Program, Glob, Import
 
-Program("nostr-soumen", Glob("*.cpp"))
+Import("env")
+env.Program("nostr-soumen", Glob("*.cpp"))
