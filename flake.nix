@@ -41,6 +41,30 @@
           ];
         in
         {
+          treefmt = {
+            projectRootFile = ".git/config";
+
+            # Nix
+            programs.nixfmt.enable = true;
+
+            # C / C++
+            programs.clang-format.enable = true;
+
+            # Python
+            programs.ruff-check.enable = true;
+            programs.ruff-format.enable = true;
+
+            # GitHub Actions
+            programs.actionlint.enable = true;
+
+            # Markdown
+            programs.mdformat.enable = true;
+
+            # ShellScript
+            programs.shellcheck.enable = true;
+            programs.shfmt.enable = true;
+          };
+
           devShells.default = pkgs.mkShell {
             nativeBuildInputs = tools.lsp ++ tools.build;
             inherit buildInputs;

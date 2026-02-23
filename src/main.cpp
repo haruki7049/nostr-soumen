@@ -2,7 +2,7 @@
 #include <CLI/CLI.hpp>
 #include <iostream>
 
-int main(int argc,char **argv) {
+int main(int argc, char **argv) {
   CLI::App app{"Watch Nostr posts by a TUI screen...", "nostr-soumen"};
 
   int p = 0;
