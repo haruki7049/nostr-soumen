@@ -53,6 +53,11 @@
 
             nativeBuildInputs = nativeBuildInputs.build;
             buildInputs = buildInputs.dependencies;
+
+            preBuild = ''
+              # Remove NIX_CFLAGS_COMPILE
+              unset NIX_CFLAGS_COMPILE
+            '';
           };
         in
         {
