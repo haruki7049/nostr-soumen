@@ -24,25 +24,30 @@
       imports = [ inputs.treefmt-nix.flakeModule ];
 
       perSystem =
-        { pkgs, lib, ... }:
+        {
+          pkgs,
+          lib,
+          system,
+          ...
+        }:
         let
           buildInputs.dependencies = [
-            pkgs.cli11
-            pkgs.ftxui
-            pkgs.boost190
+            pkgs.pkgsLLVM.cli11
+            pkgs.pkgsLLVM.ftxui
+            pkgs.pkgsLLVM.boost190
           ];
           buildInputs.dev-dependencies = [ ];
           nativeBuildInputs.lsp = [
-            pkgs.nil # Nix
-            pkgs.clang-tools # C / C++
-            pkgs.ruff # Python (Scons)
+            pkgs.pkgsLLVM.nil # Nix
+            pkgs.pkgsLLVM.clang-tools # C / C++
+            pkgs.pkgsLLVM.ruff # Python (Scons)
           ];
           nativeBuildInputs.build = [
-            pkgs.zig_0_15
-            pkgs.pkg-config
+            pkgs.pkgsLLVM.zig_0_15
+            pkgs.pkgsLLVM.pkg-config
           ];
 
-          nostr-soumen = pkgs.stdenv.mkDerivation {
+          nostr-soumen = pkgs.pkgsLLVM.stdenv.mkDerivation {
             name = "nostr-soumen";
             src = lib.cleanSource ./.;
 
@@ -87,9 +92,14 @@
             inherit nostr-soumen;
           };
 
-          devShells.default = pkgs.mkShell {
+          devShells.default = pkgs.pkgsLLVM.mkShell {
             nativeBuildInputs = nativeBuildInputs.lsp ++ nativeBuildInputs.build;
             buildInputs = buildInputs.dependencies;
+
+            shellHook = ''
+              # Remove NIX_CFLAGS_COMPILE
+              unset NIX_CFLAGS_COMPILE
+            '';
           };
         };
     };
