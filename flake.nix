@@ -32,22 +32,22 @@
         }:
         let
           buildInputs.dependencies = [
-            pkgs.pkgsLLVM.cli11
-            pkgs.pkgsLLVM.ftxui
-            pkgs.pkgsLLVM.boost190
+            pkgs.cli11
+            pkgs.ftxui
+            pkgs.boost190
           ];
           buildInputs.dev-dependencies = [ ];
           nativeBuildInputs.lsp = [
-            pkgs.pkgsLLVM.nil # Nix
-            pkgs.pkgsLLVM.clang-tools # C / C++
-            pkgs.pkgsLLVM.ruff # Python (Scons)
+            pkgs.nil # Nix
+            pkgs.clang-tools # C / C++
+            pkgs.ruff # Python (Scons)
           ];
           nativeBuildInputs.build = [
-            pkgs.pkgsLLVM.zig_0_15
-            pkgs.pkgsLLVM.pkg-config
+            pkgs.zig_0_15
+            pkgs.pkg-config
           ];
 
-          nostr-soumen = pkgs.pkgsLLVM.stdenv.mkDerivation {
+          nostr-soumen = pkgs.stdenv.mkDerivation {
             name = "nostr-soumen";
             src = lib.cleanSource ./.;
 
@@ -97,7 +97,7 @@
             inherit nostr-soumen;
           };
 
-          devShells.default = pkgs.pkgsLLVM.mkShell {
+          devShells.default = pkgs.mkShell {
             nativeBuildInputs = nativeBuildInputs.lsp ++ nativeBuildInputs.build;
             buildInputs = buildInputs.dependencies;
 
