@@ -1,18 +1,18 @@
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    systems.url = "github:nix-systems/default";
+    crane.url = "github:ipetkov/crane";
+    flake-compat.url = "github:edolstra/flake-compat";
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
-
-    # The flake-compat input to use shell.nix and default.nix on root directory
-    flake-compat.url = "github:edolstra/flake-compat";
-
-    # Formatter by treefmt-nix
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -20,62 +20,62 @@
   outputs =
     inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = import inputs.systems;
-      imports = [ inputs.treefmt-nix.flakeModule ];
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+        "aarch64-darwin"
+      ];
+
+      imports = [
+        inputs.treefmt-nix.flakeModule
+      ];
 
       perSystem =
         {
-          pkgs,
+          config,
           lib,
+          pkgs,
           system,
           ...
         }:
         let
-          buildInputs.dependencies = [
-            pkgs.cli11
-            pkgs.ftxui
-            pkgs.boost190
-          ];
-          buildInputs.dev-dependencies = [ ];
-          nativeBuildInputs.lsp = [
-            pkgs.nil # Nix
-            pkgs.clang-tools # C / C++
-            pkgs.ruff # Python (Scons)
-          ];
-          nativeBuildInputs.build = [
-            pkgs.zig_0_15
-            pkgs.pkg-config
-          ];
+          rust = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+          craneLib = (inputs.crane.mkLib pkgs).overrideToolchain rust;
+          overlays = [ inputs.rust-overlay.overlays.default ];
+          src = lib.cleanSource ./.;
 
-          nostr-soumen = pkgs.stdenv.mkDerivation {
-            name = "nostr-soumen";
-            src = lib.cleanSource ./.;
-
-            nativeBuildInputs = nativeBuildInputs.build;
-            buildInputs = buildInputs.dependencies;
-
-            preBuild = ''
-              # Remove NIX_CFLAGS_COMPILE
-              unset NIX_CFLAGS_COMPILE
-            '';
+          cargoArtifacts = craneLib.buildDepsOnly {
+            inherit src;
+          };
+          soumen = craneLib.buildPackage {
+            inherit src cargoArtifacts;
+            strictDeps = true;
+            doCheck = true;
+          };
+          cargo-clippy = craneLib.cargoClippy {
+            inherit src cargoArtifacts;
+            cargoClippyExtraArgs = "--verbose -- --deny warning";
+          };
+          cargo-doc = craneLib.cargoDoc {
+            inherit src cargoArtifacts;
           };
         in
         {
+          _module.args.pkgs = import inputs.nixpkgs {
+            inherit system overlays;
+          };
+
           treefmt = {
             projectRootFile = ".git/config";
 
             # Nix
             programs.nixfmt.enable = true;
 
-            # C / C++
-            programs.clang-format.enable = true;
+            # Rust
+            programs.rustfmt.enable = true;
 
-            # Zig
-            programs.zig.enable = true;
-
-            # Python
-            programs.ruff-check.enable = true;
-            programs.ruff-format.enable = true;
+            # TOML
+            programs.taplo.enable = true;
 
             # GitHub Actions
             programs.actionlint.enable = true;
@@ -89,22 +89,32 @@
           };
 
           packages = {
-            inherit nostr-soumen;
-            default = nostr-soumen;
+            inherit soumen;
+            default = soumen;
+            doc = cargo-doc;
           };
 
           checks = {
-            inherit nostr-soumen;
+            inherit
+              soumen
+              cargo-clippy
+              cargo-doc
+              ;
           };
 
           devShells.default = pkgs.mkShell {
-            nativeBuildInputs = nativeBuildInputs.lsp ++ nativeBuildInputs.build;
-            buildInputs = buildInputs.dependencies;
+            nativeBuildInputs = [
+              rust # Rust toolchain
+              pkgs.nil # Nix LSP
+            ];
 
             shellHook = ''
-              # Remove NIX_CFLAGS_COMPILE
-              unset NIX_CFLAGS_COMPILE
+              export PS1="\n[nix-shell:\w]$ "
             '';
+
+            inputsFrom = [
+              config.treefmt.build.devShell
+            ];
           };
         };
     };
